@@ -1,9 +1,23 @@
-#include <Arduino.h>
+#import <Arduino.h>
 
-void setup() {
-  // put your setup code here, to run once:
+#define XpinStep    2 // X step pin
+#define XpinDir     5 // X direction pin 
+#define YpinStep    3 // Y step pin
+#define YpinDir     6 // Y direction pin
+
+void setup(){
+  pinMode(XpinDir, OUTPUT);
+  pinMode(XpinStep, OUTPUT);
+  pinMode(YpinDir, OUTPUT);
+  pinMode(YpinStep, OUTPUT); 
+
+  digitalWrite(XpinDir,HIGH);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  for(byte i=0; i<200; i++) {
+    digitalWrite(XpinStep,HIGH);
+    digitalWrite(XpinStep,LOW);
+    delay(2);
+  }
 }
