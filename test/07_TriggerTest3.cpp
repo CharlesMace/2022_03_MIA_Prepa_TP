@@ -2,7 +2,7 @@
 
 int state = 0;
 int old_state = 0;
-int pin = 11;
+int pin = 6;
 int val = 0;
 unsigned long t_state = 0;
 unsigned long t_0_state = 0;
