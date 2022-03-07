@@ -1,5 +1,3 @@
-#include <Arduino.h>
-
 #define XpinStep    2 // Signal de PAS (avancement)
 #define XpinDir     5 // Direction 
 #define YpinStep    3 // Signal de PAS (avancement)
@@ -17,6 +15,8 @@ void setup(){
 
   digitalWrite( XpinDir   , HIGH); // Direction avant
   digitalWrite( XpinStep  , LOW);  // Initialisation de la broche step
+  digitalWrite( YpinDir   , HIGH); // Direction avant
+  digitalWrite( YpinStep  , LOW);  // Initialisation de la broche step
 
   // 32 prescaler freq = freq-clock/N*510 (N = prescaler) c'est du double pwm
 
@@ -33,11 +33,11 @@ void setup(){
 }
 
 void loop(){
+  while()
   for(byte i=0; i<200; i++) {
     digitalWrite(XpinStep,HIGH);
     digitalWrite(XpinStep,LOW);
   }
-  delay(1);
   
   Serial.println("Prescaler 1");
   TCCR2B = 0b00000001; // prescaler 1

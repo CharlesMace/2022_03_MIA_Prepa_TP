@@ -5,8 +5,6 @@
 #define YpinStep    3 // Y step pin
 #define YpinDir     6 // Y direction pin
 
-unsigned int 
-
 void setup(){
   pinMode(XpinDir, OUTPUT);
   pinMode(XpinStep, OUTPUT);
@@ -18,7 +16,6 @@ void setup(){
 }
 
 void loop() {
-  while()
   for(byte i=0; i<200; i++) {
     digitalWrite(XpinStep,HIGH);
     digitalWrite(XpinStep,LOW);
