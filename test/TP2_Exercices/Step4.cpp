@@ -99,7 +99,6 @@ void State_Machine_LED() {
       state_LED = 0;
       blinkCount = 0;
     }
-
     break;
   }
 }
