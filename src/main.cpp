@@ -14,7 +14,7 @@ int led = 11;
 int state_LED = 0;
 int old_state_LED = 0;
 int blinkCount = 0;
-int blinkNumber = 10; // blink 10 times
+int blinkNumber = 6; // blink 10 times
 unsigned long t_state_LED = 0;
 unsigned long t_0_state_LED = 0;
 unsigned long bounce_delay_LED = 500; // blink frequency in ms
@@ -23,7 +23,7 @@ int led_2 = 13;
 int state_LED_2 = 0;
 int old_state_LED_2 = 0;
 int blinkCount_2 = 0;
-int blinkNumber_2 = 5; // blink 10 times
+int blinkNumber_2 = 12; // blink 10 times
 unsigned long t_state_LED_2 = 0;
 unsigned long t_0_state_LED_2 = 0;
 unsigned long bounce_delay_LED_2 = 200; // blink frequency in ms
@@ -177,7 +177,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   State_Machine();
-  //State_Machine_LED();
+  State_Machine_LED();
   State_Machine_LED_2();
 
   if (state == 4){
