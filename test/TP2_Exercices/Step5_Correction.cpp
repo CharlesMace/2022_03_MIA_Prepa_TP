@@ -1,5 +1,3 @@
-#include <Arduino.h>
-
 int state = 0;
 int old_state = 0;
 int pin = 6;
