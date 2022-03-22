@@ -1,3 +1,8 @@
+/*
+  RPM = f*120/nombre de paire de pôle
+  50*120/1 = 6000 rpm
+*/
+
 #include <Arduino.h>
 
 #define XpinStep    2 // Signal de PAS (avancement)
