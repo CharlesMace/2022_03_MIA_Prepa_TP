@@ -1,207 +1,86 @@
 #include <Arduino.h>
 
-int state = 0;
-int old_state = 0;
-int pin = 6;
-int val = 0;
-unsigned long t_state = 0;
-unsigned long t_0_state = 0;
-unsigned long bounce_delay = 5;
-unsigned long hold_delay = 1000;
-bool hold = false;
+//#define pinEnable 13 // Activation du driver/pilote
+#define XpinStep    2 // Signal de PAS (avancement)
+#define XpinDir     5 // Direction 
+#define YpinStep    3 // Signal de PAS (avancement)
+#define YpinDir     6 // Direction 
 
-int led = 11;
-int state_LED = 0;
-int old_state_LED = 0;
-int blinkCount = 0;
-int blinkNumber = 6; // blink 10 times
-unsigned long t_state_LED = 0;
-unsigned long t_0_state_LED = 0;
-unsigned long bounce_delay_LED = 500; // blink frequency in ms
+volatile int interrupt = 0; 
 
-int led_2 = 13;
-int state_LED_2 = 0;
-int old_state_LED_2 = 0;
-int blinkCount_2 = 0;
-int blinkNumber_2 = 12; // blink 10 times
-unsigned long t_state_LED_2 = 0;
-unsigned long t_0_state_LED_2 = 0;
-unsigned long bounce_delay_LED_2 = 200; // blink frequency in ms
+int y=0;
+int x=0;
+int step_x = 0;
+int step_y = 0;
+int pause_x = 0;
+int pause_y = 0;
 
-void State_Machine_LED(){
-  old_state_LED = state_LED;
-  switch(state_LED)  {
-    case 0: // reset
-      blinkCount = 0;
-      state_LED = 1;
-      break;
-    case 1: // wait
-      break;
-    case 2: // turn on
-      digitalWrite(led,HIGH);
-      t_0_state_LED = millis();
-      state_LED = 3;
-      break;
-    case 3: // on check time
-      t_state_LED = millis();
-      if (t_state_LED - t_0_state_LED > bounce_delay_LED) {
-        state_LED = 4;
-      }
-      break;
-    case 4: // Turn Off
-      digitalWrite(led,LOW);
-      t_0_state_LED = millis();
-      state_LED = 5;
-      blinkCount++;
-      break;
-    case 5: // Off
-      t_state_LED = millis();
-      if (t_state_LED - t_0_state_LED > bounce_delay_LED) {
-        state_LED = 2;
-      }
-      // this second if is prioritary because it is after
-      if (blinkCount >= blinkNumber) {
-        state_LED = 0;
-      }
-      break;
-    
-  }
-}
-
-void State_Machine_LED_2(){
-  old_state_LED_2 = state_LED_2;
-  switch(state_LED_2)  {
-    case 0: // reset
-      blinkCount_2 = 0;
-      state_LED_2 = 1;
-      break;
-    case 1: // wait
-      break;
-    case 2: // turn on
-      digitalWrite(led_2,HIGH);
-      t_0_state_LED_2 = millis();
-      state_LED_2 = 3;
-      break;
-    case 3: // on check time
-      t_state_LED_2 = millis();
-      if (t_state_LED_2 - t_0_state_LED_2 > bounce_delay_LED_2) {
-        state_LED_2 = 4;
-      }
-      break;
-    case 4: // Turn Off
-      digitalWrite(led_2,LOW);
-      t_0_state_LED_2 = millis();
-      state_LED_2 = 5;
-      blinkCount_2++;
-      break;
-    case 5: // Off
-      t_state_LED_2 = millis();
-      if (t_state_LED_2 - t_0_state_LED_2 > bounce_delay_LED_2) {
-        state_LED_2 = 2;
-      }
-      // this second if is prioritary because it is after
-      if (blinkCount_2 >= blinkNumber_2) {
-        state_LED_2 = 0;
-      }
-      break;
-    
-  }
-}
-
-void State_Machine(){
-  old_state = state;
-  
-  switch (state){
-    case 0: //reset
-      hold = false;
-      state = 1;
-      break;
-
-    case 1: // START
-      val = digitalRead(pin);
-      if (val == LOW) {
-        state = 2;  
-      }
-      break;
-
-    case 2: //GO
-      t_0_state = millis();
-      state = 3;
-      break;
-      
-    case 3: //WAIT
-      val = digitalRead(pin);
-      t_state = millis();
-
-      if (val == HIGH) {
-        state = 0;
-      }
-      if (t_state - t_0_state > bounce_delay) {
-        state = 5;
-      }
-      break;
-      
-    case 4: // TRIGGERED
-      state = 0;
-      break;
-
-    case 5:
-      t_state = millis();
-      val = digitalRead(pin);
-      if (val == HIGH) {
-        state = 4;
-      }
-      if (hold==false){
-        if (t_state - t_0_state > hold_delay) {
-          state = 6;
-        }
-      }
-      break;
-
-    case 6: // HOLD
-      if (digitalRead(pin)) state=4; // if in the meanwhile button is released
-      else state = 5;
-      hold = true;
-      break;
-  }
-}
-
-void setup() {
-  // put your setup code here, to run once:
-  pinMode(pin,INPUT);
-  pinMode(led,OUTPUT);
-  pinMode(led_2,OUTPUT);
+void setup(){
   Serial.begin(9600);
+  Serial.println("Test A4988");
+  //pinMode( pinEnable, OUTPUT );
+  pinMode( XpinDir   , OUTPUT );
+  pinMode( XpinStep  , OUTPUT );
+  pinMode( YpinDir   , OUTPUT );
+  pinMode( YpinStep  , OUTPUT );
+
+  digitalWrite( XpinDir   , HIGH); // Direction avant
+  digitalWrite( XpinStep  , LOW);  // Initialisation de la broche step
+  digitalWrite( YpinDir   , HIGH); // Direction avant
+  digitalWrite( YpinStep  , LOW);  // Initialisation de la broche step
+
+  cli();
+  TCCR2A = 0b00000010;
+  TCCR2B = 0b00000010; // clock/256 soit 16 microsecodes
+  TIMSK2 = 0b00000010;
+  OCR2A = 4; // 16usec * 31 = 0,469msec (je fais un toggle de la patte step, ce qui fait une frequence de la moitiÃ©, donc une periode doubl de environ 1msec
+  sei();
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-  State_Machine();
-  State_Machine_LED();
-  State_Machine_LED_2();
+ISR(TIMER2_COMPA_vect) {
+  int X_step_number = 9600;
+  int Y_step_number = 12800;
+  int X_frequency = 2;
+  int Y_frequency = 1;
 
-  if (state == 4){
-    state_LED = 2;
+  if (step_x<X_step_number) {
+    if (x==X_frequency){
+      x = 0;
+      digitalWrite( XpinStep, HIGH );
+      digitalWrite( XpinStep, LOW );
+      step_x++;
+    }
+  }
+  else {
+    pause_x++;
+    if (pause_x == 60){// 3sec = 3000000usec/50usec => 60000
+      pause_x = 0;
+      step_x = 0;
+      x = 0;
+    }
   }
 
-  if (state == 6){
-    state_LED_2 = 2;
+  if (step_y<Y_step_number) {
+    if (y==Y_frequency){
+      y = 0;
+      digitalWrite( YpinStep, HIGH );
+      digitalWrite( YpinStep, LOW );
+      step_y++;
+    }
   }
-  
-  if (state == 4) {
-    Serial.println("TRIGGERED!!!");
+  else {
+    pause_y++;
+    if (pause_y == 60){ // 3sec = 3000000usec/50usec => 60000
+      pause_y = 0;
+      step_y = 0;
+    }
   }
-  if (state != old_state) {
-    Serial.print("state = ");
-    Serial.println(state);
-  }
-  
-    if (state_LED != old_state_LED) {
-      Serial.print("state led = ");
-      Serial.println(state_LED);
-  }
-    if (state_LED_2 != old_state_LED_2) {
-      Serial.print("state led 2 = ");
-      Serial.println(state_LED_2);
-  }
+
+  x++;
+  y++;
+
+  delayMicroseconds(50);
+}
+
+void loop(){
 }

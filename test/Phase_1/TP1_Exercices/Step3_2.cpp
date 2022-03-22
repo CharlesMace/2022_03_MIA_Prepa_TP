@@ -31,17 +31,17 @@ void setup(){
 
   cli();
   TCCR2A = 0b00000010;
-  TCCR2B = 0b00000110; // clock/256 soit 16 microsecodes
+  TCCR2B = 0b00000010; // clock/256 soit 16 microsecodes
   TIMSK2 = 0b00000010;
-  OCR2A = 32; // 16usec * 31 = 0,469msec (je fais un toggle de la patte step, ce qui fait une frequence de la moitiÃ©, donc une periode doubl de environ 1msec
+  OCR2A = 4; // 16usec * 31 = 0,469msec (je fais un toggle de la patte step, ce qui fait une frequence de la moitiÃ©, donc une periode doubl de environ 1msec
   sei();
 }
 
 ISR(TIMER2_COMPA_vect) {
   int X_step_number = 9600;
   int Y_step_number = 12800;
-  int X_frequency = 40;
-  int Y_frequency = 25;
+  int X_frequency = 2;
+  int Y_frequency = 1;
 
   if (step_x<X_step_number) {
     if (x==X_frequency){
@@ -53,7 +53,7 @@ ISR(TIMER2_COMPA_vect) {
   }
   else {
     pause_x++;
-    if (pause_x == 60000){// 3sec = 3000000usec/50usec => 60000
+    if (pause_x == 60){// 3sec = 3000000usec/50usec => 60000
       pause_x = 0;
       step_x = 0;
       x = 0;
@@ -70,7 +70,7 @@ ISR(TIMER2_COMPA_vect) {
   }
   else {
     pause_y++;
-    if (pause_y == 60000){ // 3sec = 3000000usec/50usec => 60000
+    if (pause_y == 60){ // 3sec = 3000000usec/50usec => 60000
       pause_y = 0;
       step_y = 0;
     }
