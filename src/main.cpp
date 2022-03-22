@@ -1,86 +1,60 @@
 #include <Arduino.h>
+#include <SPI.h>
+#include <Wire.h>
+#include "Adafruit_TCS34725.h"
+//Adafruit_TCS34725 tcs = Adafruit_TCS34725();
+//Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_700MS, TCS34725_GAIN_1X);
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_1X);
 
-//#define pinEnable 13 // Activation du driver/pilote
-#define XpinStep    2 // Signal de PAS (avancement)
-#define XpinDir     5 // Direction 
-#define YpinStep    3 // Signal de PAS (avancement)
-#define YpinDir     6 // Direction 
+// SENSOR INPUTS // ***********************************************************
+int IR_01 = A2; // Resume on CNC shield
+int IR_02 = A3; // CoolEn on CNC shield 
+int IR_03 = A0; // Abort on CNC shield
+int IR_04 = A1; // Hold on CNC shield
+// The colour sensor is connected to the SDA/SCL pins of the Arduino (A4 abd A5)
+// ****************************************************************************
 
-volatile int interrupt = 0; 
+char SensorSimulation;
 
-int y=0;
-int x=0;
-int step_x = 0;
-int step_y = 0;
-int pause_x = 0;
-int pause_y = 0;
+int CompteurSimulation = 0;
+int r = 0;
+int g = 0;
+int b = 0;
+int c = 0;
 
-void setup(){
+void setup() {
+  // put your setup code here, to run once:
   Serial.begin(9600);
-  Serial.println("Test A4988");
-  //pinMode( pinEnable, OUTPUT );
-  pinMode( XpinDir   , OUTPUT );
-  pinMode( XpinStep  , OUTPUT );
-  pinMode( YpinDir   , OUTPUT );
-  pinMode( YpinStep  , OUTPUT );
-
-  digitalWrite( XpinDir   , HIGH); // Direction avant
-  digitalWrite( XpinStep  , LOW);  // Initialisation de la broche step
-  digitalWrite( YpinDir   , HIGH); // Direction avant
-  digitalWrite( YpinStep  , LOW);  // Initialisation de la broche step
-
-  cli();
-  TCCR2A = 0b00000010;
-  TCCR2B = 0b00000010; // clock/256 soit 16 microsecodes
-  TIMSK2 = 0b00000010;
-  OCR2A = 4; // 16usec * 31 = 0,469msec (je fais un toggle de la patte step, ce qui fait une frequence de la moitiÃ©, donc une periode doubl de environ 1msec
-  sei();
 }
 
-ISR(TIMER2_COMPA_vect) {
-  int X_step_number = 9600;
-  int Y_step_number = 12800;
-  int X_frequency = 2;
-  int Y_frequency = 1;
-
-  if (step_x<X_step_number) {
-    if (x==X_frequency){
-      x = 0;
-      digitalWrite( XpinStep, HIGH );
-      digitalWrite( XpinStep, LOW );
-      step_x++;
-    }
-  }
-  else {
-    pause_x++;
-    if (pause_x == 60){// 3sec = 3000000usec/50usec => 60000
-      pause_x = 0;
-      step_x = 0;
-      x = 0;
-    }
+void loop() {
+  while (CompteurSimulation < 4) {
+      if (Serial.available()) {
+        SensorSimulation = Serial.read();
+        /*
+        * Please, select the 'no new line' option on the Serial Monitor
+        * in the bottom right box
+        */
+        Serial.print("The character received is: ");
+        Serial.print(SensorSimulation);
+        Serial.println();
+        if (r != 0 || g != 0 || b != 0 || c != 0){
+          CompteurSimulation++;
+        }
+      }
+    delay(500); 
   }
 
-  if (step_y<Y_step_number) {
-    if (y==Y_frequency){
-      y = 0;
-      digitalWrite( YpinStep, HIGH );
-      digitalWrite( YpinStep, LOW );
-      step_y++;
-    }
-  }
-  else {
-    pause_y++;
-    if (pause_y == 60){ // 3sec = 3000000usec/50usec => 60000
-      pause_y = 0;
-      step_y = 0;
-    }
-  }
-
-  x++;
-  y++;
-
-  delayMicroseconds(50);
-}
-
-void loop(){
+  unsigned long t0,t;
+  t0 = millis();
+  Serial.print("R: "); Serial.print(r, DEC); Serial.print(" ");
+  Serial.print("G: "); Serial.print(g, DEC); Serial.print(" ");
+  Serial.print("B: "); Serial.print(b, DEC); Serial.print(" ");
+  Serial.print("C: "); Serial.print(c, DEC); Serial.print(" ");
+  Serial.print("IR 01: "); Serial.print(digitalRead(IR_01)); Serial.print(" ");
+  Serial.print("IR 02: "); Serial.print(digitalRead(IR_02)); Serial.print(" ");
+  Serial.print("IR 03: "); Serial.print(digitalRead(IR_03)); Serial.print(" ");
+  Serial.print("IR 04: "); Serial.print(digitalRead(IR_04)); Serial.print(" ");
+  t = millis() - t0; // t is a measurement of the time spent
+  Serial.println(t);
 }
