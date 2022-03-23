@@ -13,20 +13,16 @@ void loop() {
     }
   if (incomingByte == 97) { //the number of bytes send by the 1 on the keyboard is 49
     object = 1; // If 1 is press on the keyboard sensor 1 goes to state 1 (signal)
-    Serial.println("This is a coke can!");
-    }
+  }
   if (incomingByte == 122) { //The number of bytes correspond to 2 on the keyboard
     object = 2; // If 2 is press, sensor 2 goes to state 1
-    Serial.println("This is a MacBook Pro!");
-    }
+  }
   if (incomingByte == 101) { // Number of bytes corresponding to 3 on the key board
     object = 3; // If 3 is press, sensor 3 goes to state 1
-    Serial.println("This Sparta!");
-    }
-    if (incomingByte == 114) { // Number of bytes corresponding to 3 on the key board
+  }
+  if (incomingByte == 114) { // Number of bytes corresponding to 3 on the key board
     object = 4; // If 3 is press, sensor 3 goes to state 1
-    Serial.println("This is a carp koi!");
-    }
+  }
   Serial.print("Octet recu: ");
   Serial.println((char)incomingByte, DEC);
   Serial.println(object);
